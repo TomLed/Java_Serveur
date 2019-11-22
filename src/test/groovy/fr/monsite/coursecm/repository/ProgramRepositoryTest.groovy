@@ -11,11 +11,26 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 @RunWith(SpringRunner)
 @SpringBootTest
 @ActiveProfiles('test')
 class ProgramRepositoryTest {
+    Program parse(String input) {
+        def tokens = input.tokenize('|')
+
+        new Program(from: todayAt(tokens[0]), to: todayAt(tokens[1]), name: tokens[2])
+    }
+
+    LocalDateTime todayAt(String input) {
+        today.atTime(time(input))
+    }
+
+    LocalTime time(String input) {
+        LocalTime.parse(input, DateTimeFormatter.ofPattern("HH:mm"))
+    }
     @Autowired
     ProgramRepository programRepository
 
@@ -30,11 +45,12 @@ class ProgramRepositoryTest {
 
     @Test
     void save() {
-        programRepository.save(parse('01:45|01:50|Météo'))
+        programRepository.save(parse('01:45|01:47|Météo'))
 
         assert programRepository.count() == 1
         assert programRepository.findAll()[0].name == 'Météo'
     }
+
 
     @Test
     void findByToGreaterThanAndFromLessThan() {
